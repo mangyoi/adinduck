@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            height: 100%;
+        }
+
+        .header-bar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .sound-icon, .close-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .quiz-title {
+            text-align: center;
+            margin-top: 60px;
+            margin-bottom: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 0 20px;
+        }
+
+        .question-container {
+            background-color: #c7d5e3;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid #000;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .option {
+            background-color: #f9e5b9;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000;
+        }
+        
+        .option:hover {
+            background-color: #f0d89e;
+            border: 2px solid #000;
+        }
+        
+        .option.selected {
+            background-color: #e8cb7e;
+            transform: scale(0.98);
+            border: 2px solid #000;
+        }
+
+        .next-button {
+            background-color: #ffb6e1;
+            color: white;
+            padding: 15px 50px;
+            border-radius: 30px;
+            border: none;
+            margin-top: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .next-button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .next-button.active:hover {
+            background-color: #ff9ed5;
+        }
+
+        .response-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .response-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .response-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 80%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            /* border: 2px solid #000; */
+        }
+
+        .response-message {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .close-response {
+            background-color: #ffb6e1;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 20px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="header-bar">
+            <div class="sound-icon">🔊</div>
+            <div class="close-icon">✕</div>
+        </div>
+        
+        <div class="quiz-title">
+            ayoo kuis kecil kecilan
+            <br>jawablah pertanyaan dibawah ini
+            <br>dengan baik dan benar
+        </div>
+        
+        <div class="question-container">
+            Gimana perasaan kamu hari ini?
+        </div>
+        
+        <div class="options-grid">
+            <div class="option" id="option1" data-response="wowow soo cool">Baik banget!</div>
+            <div class="option" id="option2" data-response="kamu haruss berinteraksi dengan kucing">Biasa aja...</div>
+            <div class="option" id="option3" data-response="makan gacoan lvl 4">Lagi sedih...</div>
+            <div class="option" id="option4" data-response="makan gacoan lvl 8, dijamin ga sedih">sangat sedih</div>
+        </div>
+        
+        <button class="next-button" id="nextButton">Next</button>
+    </div>
+
+    <!-- Response Modal -->
+    <div class="response-modal" id="responseModal">
+        <div class="response-content">
+            <div class="response-message" id="responseMessage"></div>
+            <button class="close-response" id="closeResponse">OK</button>
+        </div>
+    </div>
+    
+    <!-- Audio element for background music -->
+    <audio id="backgroundMusic" loop>
+        <source src="assets/music/Undertale OST_ 049 - It's Showtime!.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get elements
+            const options = document.querySelectorAll('.option');
+            const nextButton = document.getElementById('nextButton');
+            const closeIcon = document.querySelector('.close-icon');
+            const soundIcon = document.querySelector('.sound-icon');
+            const responseModal = document.getElementById('responseModal');
+            const responseMessage = document.getElementById('responseMessage');
+            const closeResponse = document.getElementById('closeResponse');
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            
+            // Track the currently selected option and if an option has been chosen
+            let selectedOption = null;
+            let hasSelectedOption = false;
+            
+            // Set up background music
+            let soundOn = true;
+            
+            // Function to play music
+            function playMusic() {
+                backgroundMusic.volume = 0.5; // Set volume to 50%
+                
+                // Play music with a promise to handle autoplay restrictions
+                const playPromise = backgroundMusic.play();
+                
+                // Handle potential errors with autoplay
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        // Autoplay started successfully
+                        console.log("Music started playing");
+                    }).catch(error => {
+                        // Autoplay was prevented
+                        console.log("Autoplay prevented: " + error);
+                        // We need a user interaction to play audio
+                        soundOn = false;
+                        soundIcon.textContent = '🔇';
+                    });
+                }
+            }
+            
+            // Try to play music on page load
+            playMusic();
+            
+            // Option selection functionality
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected class from any previously selected option
+                    if (selectedOption) {
+                        selectedOption.classList.remove('selected');
+                    }
+                    
+                    // Add selected class to the clicked option
+                    this.classList.add('selected');
+                    selectedOption = this;
+                    
+                    // Show the response immediately
+                    const response = this.getAttribute('data-response');
+                    responseMessage.textContent = response;
+                    responseModal.classList.add('active');
+                    
+                    // Enable the Next button after an option is selected
+                    hasSelectedOption = true;
+                    nextButton.classList.add('active');
+                });
+            });
+            
+            // Close response modal
+            closeResponse.addEventListener('click', function() {
+                responseModal.classList.remove('active');
+            });
+            
+            nextButton.addEventListener('click', function() {
+                if (!hasSelectedOption) {
+                    alert('Please select an option first!');
+                    return;
+                }
+                
+                window.location.href = 'amplop.html';
+            });
+            
+            // Close icon functionality
+            closeIcon.addEventListener('click', function() {
+                if (confirm('Are you sure you want to exit the quiz?')) {
+                    // Here you can redirect back to the chat interface
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Sound icon functionality
+            soundIcon.addEventListener('click', function() {
+                soundOn = !soundOn;
+                soundIcon.textContent = soundOn ? '🔊' : '🔇';
+                
+                if (soundOn) {
+                    playMusic();
+                } else {
+                    backgroundMusic.pause();
+                }
+            });
+            
+            // Also allow clicking anywhere on the page to start music (for mobile devices)
+            document.body.addEventListener('click', function() {
+                if (soundOn && backgroundMusic.paused) {
+                    playMusic();
+                }
+            }, { once: true });
+        });
+    </script>
+</body>
+</html>

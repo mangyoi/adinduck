@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap To Open</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-bar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .sound-icon, .close-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .envelope-container {
+            position: relative;
+            width: 80%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .banana-cat {
+            width: 120px;
+            position: absolute;
+            top: -110px;
+            left: 10px;
+            z-index: 2;
+        }
+
+        .envelope {
+            width: 100%;
+            margin-top: 60px;
+        }
+
+        .tap-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Segoe Script', cursive;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .loading-dots {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            letter-spacing: 5px;
+        }
+        
+        /* Popup styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .popup-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transform: scale(0.7);
+            transition: transform 0.3s;
+        }
+        
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+        
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: #555;
+            cursor: pointer;
+            z-index: 1010;
+        }
+        
+        .popup-image {
+            max-width: 100%;
+            max-height: 70vh;
+            display: block;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="sound-icon">🔊</div>
+        <div class="close-icon">✕</div>
+    </div>
+    
+    <div class="envelope-container" id="envelopeContainer">
+        <img src="assets/amplop.png" alt="Envelope" class="envelope" id="envelope">
+        <!-- <div class="tap-text">Tap To Open</div> -->
+    </div>
+    
+    <div class="loading-dots">...</div>
+    
+    <!-- Popup overlay -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-content">
+            <div class="popup-close" id="popupClose">✕</div>
+            <img src="assets/surprise.png" alt="Surprise Image" class="popup-image" id="popupImage">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const envelopeContainer = document.getElementById('envelopeContainer');
+            const closeIcon = document.querySelector('.close-icon');
+            const soundIcon = document.querySelector('.sound-icon');
+            const popupOverlay = document.getElementById('popupOverlay');
+            const popupClose = document.getElementById('popupClose');
+            
+            // Function to show popup
+            function showPopup() {
+                popupOverlay.classList.add('active');
+                // Play sound if sound is enabled
+                if (soundOn) {
+                    // You could add sound here
+                    // const sound = new Audio('path/to/open-sound.mp3');
+                    // sound.play();
+                }
+            }
+            
+            // Function to hide popup
+            function hidePopup() {
+                popupOverlay.classList.remove('active');
+            }
+            
+            // Handle envelope tap
+            envelopeContainer.addEventListener('click', function() {
+                // Add a quick scale effect when clicked
+                envelopeContainer.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    envelopeContainer.style.transform = 'scale(1)';
+                    // Show the popup
+                    showPopup();
+                }, 200);
+            });
+            
+            // Close popup when clicking the close button
+            popupClose.addEventListener('click', function(e) {
+                e.stopPropagation();
+                hidePopup();
+            });
+            
+            // Close popup when clicking outside the image
+            popupOverlay.addEventListener('click', function(e) {
+                if (e.target === popupOverlay) {
+                    hidePopup();
+                }
+            });
+            
+            // Close icon functionality
+            closeIcon.addEventListener('click', function() {
+                if (confirm('Are you sure you want to exit?')) {
+                    // Here you can redirect back to the main interface
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Sound icon functionality
+            let soundOn = true;
+            soundIcon.addEventListener('click', function() {
+                soundOn = !soundOn;
+                soundIcon.textContent = soundOn ? '🔊' : '🔇';
+            });
+            
+            // Add subtle animation to the envelope to indicate it's tappable
+            function pulseEnvelope() {
+                if (!popupOverlay.classList.contains('active')) {
+                    envelopeContainer.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        envelopeContainer.style.transform = 'scale(1)';
+                        setTimeout(pulseEnvelope, 2000);
+                    }, 1000);
+                } else {
+                    setTimeout(pulseEnvelope, 1000);
+                }
+            }
+            
+            // Start the subtle pulse animation
+            setTimeout(pulseEnvelope, 1000);
+        });
+    </script>
+</body>
+</html>

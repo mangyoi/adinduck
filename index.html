@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #a5b3c1;
+            color: #000;
+            padding: 15px;
+            border-radius: 0 0 20px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #ffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .profile-status {
+            font-size: 14px;
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+        }
+
+        .received {
+            align-self: flex-start;
+            background-color: #c7d5e3;
+            border: 2px solid #000;
+        }
+
+        .sent {
+            align-self: flex-end;
+            background-color: #f9e5b9;
+            border: 2px solid #000;
+        }
+
+        .cat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: auto;
+            padding: 10px;
+        }
+
+        .pink-button {
+            background-color: #ffb6e1;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .cat-image {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 10px;
+        }
+
+        .input-container {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        .send-button {
+            background-color: #a5b3c1;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="profile-icon">
+            <span>👤</span>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">lorem ipsum ajadeh</div>
+            <div class="profile-status">online</div>
+        </div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer">
+        <div class="message received">
+            halooo kak riskaaulia, how was ur day???? is it good? i hope that u r doin cool
+        </div>
+        <div class="message sent">
+            (ini ceritanya kamu jawab dalam hati, dan kamu lagii keadaan ok)
+        </div>
+        <div class="message received">
+            Yeayy, mari kita mulaii
+        </div>
+    </div>
+    
+    <div class="cat-container">
+        <div class="pink-button">gas</div>
+        <img src="assets/kucing.png" alt="Cat Image" class="cat-image" id="catImage">
+    </div>
+    
+    <div class="input-container">
+        <input type="text" class="message-input" placeholder="Type a message...">
+        <button class="send-button">➤</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.querySelector('.message-input');
+            const sendButton = document.querySelector('.send-button');
+            const chatContainer = document.getElementById('chatContainer');
+            const pinkButton = document.querySelector('.pink-button');
+            
+            // Function to add a new message
+            function addMessage(text, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', type);
+                messageDiv.textContent = text;
+                chatContainer.appendChild(messageDiv);
+                
+                // Scroll to the bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // Send message when clicking the send button
+            sendButton.addEventListener('click', function() {
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    addMessage(messageText, 'sent');
+                    messageInput.value = '';
+                    
+                    // Simulate a reply after a short delay
+                    setTimeout(() => {
+                        addMessage('pencet tombol gas nya heheheh', 'received');
+                    }, 1000);
+                }
+            });
+            
+            // Send message when pressing Enter
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendButton.click();
+                }
+            });
+            
+            // Animation for the gas button
+            pinkButton.addEventListener('click', function() {
+                pinkButton.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        pinkButton.style.transform = 'scale(1)';
+                        window.location.href = 'quis.html';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

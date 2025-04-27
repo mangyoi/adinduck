@@ -249,7 +249,7 @@
                         // Autoplay was prevented
                         console.log("Autoplay prevented: " + error);
                         // We need a user interaction to play audio
-                        soundOn = false;
+                        soundOn = true;
                         soundIcon.textContent = '🔇';
                         localStorage.setItem('musicState', 'paused');
                     });

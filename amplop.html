@@ -171,14 +171,13 @@
             const popupClose = document.getElementById('popupClose');
             const backgroundMusic = document.getElementById('backgroundMusic');
             
-            // Get the saved music state and position
-            let soundOn = localStorage.getItem('musicState') === 'playing';
+            // Always start with sound on for the envelope page
+            let soundOn = true;
+            
+            // Get the saved position (if any) to continue from that point
             const savedPosition = parseFloat(localStorage.getItem('musicPosition') || '0');
             
-            // Update sound icon based on saved state
-            soundIcon.textContent = soundOn ? '🔊' : '🔇';
-            
-            // Function to play music from saved position
+            // Function to play music
             function playMusic() {
                 // Set the current time to the saved position if available
                 if (savedPosition > 0 && !isNaN(savedPosition)) {
@@ -194,7 +193,7 @@
                 if (playPromise !== undefined) {
                     playPromise.then(_ => {
                         // Autoplay started successfully
-                        console.log("Music resumed from position:", savedPosition);
+                        console.log("Music started playing");
                         localStorage.setItem('musicState', 'playing');
                     }).catch(error => {
                         // Autoplay was prevented
@@ -203,6 +202,13 @@
                         soundOn = false;
                         soundIcon.textContent = '🔇';
                         localStorage.setItem('musicState', 'paused');
+                        
+                        // Add event listener to play on first interaction
+                        document.body.addEventListener('click', function() {
+                            if (soundOn && backgroundMusic.paused) {
+                                playMusic();
+                            }
+                        }, { once: true });
                     });
                 }
             }
@@ -214,15 +220,12 @@
                 }
             }, 1000);
             
-            // Start playing music if it was playing on the previous page
-            if (soundOn) {
-                playMusic();
-            }
+            // Try to play music immediately when the page loads
+            playMusic();
             
             // Function to show popup
             function showPopup() {
                 popupOverlay.classList.add('active');
-                // Play sound if sound is enabled - we'll keep the background music playing
             }
             
             // Function to hide popup
@@ -238,6 +241,11 @@
                     envelopeContainer.style.transform = 'scale(1)';
                     // Show the popup
                     showPopup();
+                    
+                    // If music was blocked by autoplay policy, try playing it on interaction
+                    if (soundOn && backgroundMusic.paused) {
+                        playMusic();
+                    }
                 }, 200);
             });
             
@@ -265,7 +273,7 @@
                 }
             });
             
-            // Sound icon functionality
+            // Sound icon functionality - toggle sound on/off
             soundIcon.addEventListener('click', function() {
                 soundOn = !soundOn;
                 soundIcon.textContent = soundOn ? '🔊' : '🔇';
@@ -278,13 +286,6 @@
                     localStorage.setItem('musicState', 'paused');
                 }
             });
-            
-            // Also allow clicking anywhere on the page to start music (for mobile devices)
-            document.body.addEventListener('click', function() {
-                if (soundOn && backgroundMusic.paused) {
-                    playMusic();
-                }
-            }, { once: true });
             
             // Add subtle animation to the envelope to indicate it's tappable
             function pulseEnvelope() {

@@ -156,6 +156,12 @@
         </div>
     </div>
 
+    <!-- Same audio element with same source -->
+    <audio id="backgroundMusic" loop>
+        <source src="assets/music/You Intro.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const envelopeContainer = document.getElementById('envelopeContainer');
@@ -163,16 +169,60 @@
             const soundIcon = document.querySelector('.sound-icon');
             const popupOverlay = document.getElementById('popupOverlay');
             const popupClose = document.getElementById('popupClose');
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            
+            // Get the saved music state and position
+            let soundOn = localStorage.getItem('musicState') === 'playing';
+            const savedPosition = parseFloat(localStorage.getItem('musicPosition') || '0');
+            
+            // Update sound icon based on saved state
+            soundIcon.textContent = soundOn ? '🔊' : '🔇';
+            
+            // Function to play music from saved position
+            function playMusic() {
+                // Set the current time to the saved position if available
+                if (savedPosition > 0 && !isNaN(savedPosition)) {
+                    backgroundMusic.currentTime = savedPosition;
+                }
+                
+                backgroundMusic.volume = 0.5; // Set volume to 50%
+                
+                // Play music with a promise to handle autoplay restrictions
+                const playPromise = backgroundMusic.play();
+                
+                // Handle potential errors with autoplay
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        // Autoplay started successfully
+                        console.log("Music resumed from position:", savedPosition);
+                        localStorage.setItem('musicState', 'playing');
+                    }).catch(error => {
+                        // Autoplay was prevented
+                        console.log("Autoplay prevented: " + error);
+                        // We need a user interaction to play audio
+                        soundOn = false;
+                        soundIcon.textContent = '🔇';
+                        localStorage.setItem('musicState', 'paused');
+                    });
+                }
+            }
+            
+            // Save music position periodically
+            setInterval(() => {
+                if (!backgroundMusic.paused) {
+                    localStorage.setItem('musicPosition', backgroundMusic.currentTime.toString());
+                }
+            }, 1000);
+            
+            // Start playing music if it was playing on the previous page
+            if (soundOn) {
+                playMusic();
+            }
             
             // Function to show popup
             function showPopup() {
                 popupOverlay.classList.add('active');
-                // Play sound if sound is enabled
-                if (soundOn) {
-                    // You could add sound here
-                    // const sound = new Audio('path/to/open-sound.mp3');
-                    // sound.play();
-                }
+                // Play sound if sound is enabled - we'll keep the background music playing
             }
             
             // Function to hide popup
@@ -207,17 +257,34 @@
             // Close icon functionality
             closeIcon.addEventListener('click', function() {
                 if (confirm('Are you sure you want to exit?')) {
+                    // Clear music state when exiting
+                    localStorage.removeItem('musicState');
+                    localStorage.removeItem('musicPosition');
                     // Here you can redirect back to the main interface
                     window.location.href = 'index.html';
                 }
             });
             
             // Sound icon functionality
-            let soundOn = true;
             soundIcon.addEventListener('click', function() {
                 soundOn = !soundOn;
                 soundIcon.textContent = soundOn ? '🔊' : '🔇';
+                
+                if (soundOn) {
+                    playMusic();
+                    localStorage.setItem('musicState', 'playing');
+                } else {
+                    backgroundMusic.pause();
+                    localStorage.setItem('musicState', 'paused');
+                }
             });
+            
+            // Also allow clicking anywhere on the page to start music (for mobile devices)
+            document.body.addEventListener('click', function() {
+                if (soundOn && backgroundMusic.paused) {
+                    playMusic();
+                }
+            }, { once: true });
             
             // Add subtle animation to the envelope to indicate it's tappable
             function pulseEnvelope() {

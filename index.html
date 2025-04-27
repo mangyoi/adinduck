@@ -145,10 +145,10 @@
     
     <div class="chat-container" id="chatContainer">
         <div class="message received">
-            halooo kak riskaaulia, how was ur day???? is it good? i hope that u r doin cool
+            halooo adindaa yang cantik manis nan lucuuu, how was ur day???? is it good? i hope that u r doin cool
         </div>
         <div class="message sent">
-            (ini ceritanya kamu jawab dalam hati, dan kamu lagii keadaan ok)
+            (ini ceritanya kamu jawab dalam hati, dan kamu lagii keadaan happy, kalo gkk happy, pura pura ajaaa bentar)
         </div>
         <div class="message received">
             Yeayy, mari kita mulaii
@@ -172,39 +172,33 @@
             const chatContainer = document.getElementById('chatContainer');
             const pinkButton = document.querySelector('.pink-button');
             
-            // Function to add a new message
             function addMessage(text, type) {
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('message', type);
                 messageDiv.textContent = text;
                 chatContainer.appendChild(messageDiv);
                 
-                // Scroll to the bottom
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
             
-            // Send message when clicking the send button
             sendButton.addEventListener('click', function() {
                 const messageText = messageInput.value.trim();
                 if (messageText) {
                     addMessage(messageText, 'sent');
                     messageInput.value = '';
                     
-                    // Simulate a reply after a short delay
                     setTimeout(() => {
                         addMessage('pencet tombol gas nya heheheh', 'received');
                     }, 1000);
                 }
             });
             
-            // Send message when pressing Enter
             messageInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     sendButton.click();
                 }
             });
             
-            // Animation for the gas button
             pinkButton.addEventListener('click', function() {
                 pinkButton.style.transform = 'scale(0.95)';
                     setTimeout(() => {

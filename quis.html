@@ -185,15 +185,14 @@
         
         <div class="options-grid">
             <div class="option" id="option1" data-response="wowow soo cool">Baik banget!</div>
-            <div class="option" id="option2" data-response="kamu haruss berinteraksi dengan kucing">Biasa aja...</div>
-            <div class="option" id="option3" data-response="makan gacoan lvl 4">Lagi sedih...</div>
-            <div class="option" id="option4" data-response="makan gacoan lvl 8, dijamin ga sedih">sangat sedih</div>
+            <div class="option" id="option2" data-response="kaamuu harus main candy crush">Biasa aja...</div>
+            <div class="option" id="option3" data-response="makan mie ayooo">Lagi sedih...</div>
+            <div class="option" id="option4" data-response="kamuu harus makan sushi (sama aku doang bolehnya)">sangat sedih</div>
         </div>
         
         <button class="next-button" id="nextButton">Next</button>
     </div>
 
-    <!-- Response Modal -->
     <div class="response-modal" id="responseModal">
         <div class="response-content">
             <div class="response-message" id="responseMessage"></div>
@@ -201,15 +200,13 @@
         </div>
     </div>
     
-    <!-- Audio element for background music -->
     <audio id="backgroundMusic" loop>
-        <source src="assets/music/Undertale OST_ 049 - It's Showtime!.mp3" type="audio/mp3">
+        <source src="assets/music/You Intro.mp3" type="audio/mp3">
         Your browser does not support the audio element.
     </audio>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get elements
             const options = document.querySelectorAll('.option');
             const nextButton = document.getElementById('nextButton');
             const closeIcon = document.querySelector('.close-icon');
@@ -224,11 +221,20 @@
             let hasSelectedOption = false;
             
             // Set up background music
-            let soundOn = true;
+            let soundOn = localStorage.getItem('musicState') === 'playing' || true;
+            
+            // Update sound icon based on saved state
+            soundIcon.textContent = soundOn ? '🔊' : '🔇';
             
             // Function to play music
             function playMusic() {
                 backgroundMusic.volume = 0.5; // Set volume to 50%
+                
+                // If we have a saved position, use it
+                const savedPosition = parseFloat(localStorage.getItem('musicPosition') || '0');
+                if (savedPosition > 0 && !isNaN(savedPosition)) {
+                    backgroundMusic.currentTime = savedPosition;
+                }
                 
                 // Play music with a promise to handle autoplay restrictions
                 const playPromise = backgroundMusic.play();
@@ -238,18 +244,29 @@
                     playPromise.then(_ => {
                         // Autoplay started successfully
                         console.log("Music started playing");
+                        localStorage.setItem('musicState', 'playing');
                     }).catch(error => {
                         // Autoplay was prevented
                         console.log("Autoplay prevented: " + error);
                         // We need a user interaction to play audio
                         soundOn = false;
                         soundIcon.textContent = '🔇';
+                        localStorage.setItem('musicState', 'paused');
                     });
                 }
             }
             
+            // Save music position periodically
+            setInterval(() => {
+                if (!backgroundMusic.paused) {
+                    localStorage.setItem('musicPosition', backgroundMusic.currentTime.toString());
+                }
+            }, 1000);
+            
             // Try to play music on page load
-            playMusic();
+            if (soundOn) {
+                playMusic();
+            }
             
             // Option selection functionality
             options.forEach(option => {
@@ -285,12 +302,19 @@
                     return;
                 }
                 
+                // Save the current music state and position before navigating
+                localStorage.setItem('musicState', soundOn ? 'playing' : 'paused');
+                localStorage.setItem('musicPosition', backgroundMusic.currentTime.toString());
+                
                 window.location.href = 'amplop.html';
             });
             
             // Close icon functionality
             closeIcon.addEventListener('click', function() {
                 if (confirm('Are you sure you want to exit the quiz?')) {
+                    // Clear music state when exiting
+                    localStorage.removeItem('musicState');
+                    localStorage.removeItem('musicPosition');
                     // Here you can redirect back to the chat interface
                     window.location.href = 'index.html';
                 }
@@ -303,8 +327,10 @@
                 
                 if (soundOn) {
                     playMusic();
+                    localStorage.setItem('musicState', 'playing');
                 } else {
                     backgroundMusic.pause();
+                    localStorage.setItem('musicState', 'paused');
                 }
             });
             
